@@ -1,11 +1,20 @@
 import requests
 
-def extractRepo(link):
-  print(link)
-
-def getInfo(username, token):
+def extract_link_information(link: str):
+  if "https://" in link:
+    link_data = link.replace("https://github.com/", "").split('/')
+    username = link_data[0]
+    repo = link_data[1]
+  else:
+    link_data = link.replace("github.com/", "").split('/')
+    username = link_data[0]
+    repo = link_data[1] 
+  return username,repo
   
-  url = f"https://api.github.com/repos/{username}/codestore"
+
+def get_info(link, token):
+  username,repo = extract_link_information(link)
+  url = f"https://api.github.com/repos/{username}/{repo}/contents"
   headers = {
     "Authorization": f"token {token}"
   } 
