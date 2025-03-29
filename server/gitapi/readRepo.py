@@ -19,7 +19,7 @@ def get_info(link, token):
   headers = {
     "Authorization": f"token {token}"
   } 
-  llm_prompt("hui")
+
   relevant_extensions = {'.py', '.js', '.java', '.cpp', '.c', '.cs', '.html', '.css', '.ts', '.rb', '.go', '.rs','.jsx','.tsx'}
 
   ignored_dirs = {'venv', '.venv', 'lib_site', 'node_modules', '__pycache__'}
@@ -45,6 +45,7 @@ def get_info(link, token):
           print(f"Error: {response.status_code} - {response.json()}")
           return []
 
-  fetch_files(url)
+  data = fetch_files(url)
+  llm_prompt(data)
 
 
