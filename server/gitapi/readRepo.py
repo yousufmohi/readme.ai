@@ -1,5 +1,5 @@
 import requests
-
+from .llm import llm_prompt
 def extract_link_information(link: str):
   if "https://" in link:
     link_data = link.replace("https://github.com/", "").split('/')
@@ -19,7 +19,7 @@ def get_info(link, token):
   headers = {
     "Authorization": f"token {token}"
   } 
-
+  llm_prompt("hui")
   relevant_extensions = {'.py', '.js', '.java', '.cpp', '.c', '.cs', '.html', '.css', '.ts', '.rb', '.go', '.rs','.jsx','.tsx'}
 
   ignored_dirs = {'venv', '.venv', 'lib_site', 'node_modules', '__pycache__'}
@@ -33,13 +33,13 @@ def get_info(link, token):
           for item in contents:
               if item['type'] == 'dir':
                   if item['name'] not in ignored_dirs:
-                      print(f"Directory: {item['path']}")
+                      # print(f"Directory: {item['path']}")
                       files_data.extend(fetch_files(item['url']))
               elif item['type'] == 'file':
                   if any(item['name'].endswith(ext) for ext in relevant_extensions):
                       file_content = requests.get(item['download_url'], headers=headers).text
                       files_data.append({"path": item['path'], "content": file_content})
-                      print(f"File: {item['path']} downloaded.")
+                      # print(f"File: {item['path']} downloaded.")
           return files_data
       else:
           print(f"Error: {response.status_code} - {response.json()}")
