@@ -3,6 +3,7 @@ import re
 import requests
 from dotenv import load_dotenv
 from .llm import llm_prompt
+import re
 
 load_dotenv()
 groq_key = os.getenv("GROQ_API_KEY")
@@ -30,6 +31,7 @@ def extract_link_information(link):
 
     return link_data[0], link_data[1]
 
+
 def get_info(link, token):
     username, repo = extract_link_information(link)
     url = f"https://api.github.com/repos/{username}/{repo}/contents"
@@ -55,6 +57,5 @@ def get_info(link, token):
         else:
             print(f"Error: {response.status_code} - {response.json()}")
             return []
-
     data = fetch_files(url)
-    llm_prompt(data,repo)
+    return llm_prompt(data,repo)
