@@ -5,48 +5,78 @@ import * as React from "react";
 import Navigation from "@/components/ui/Navigations";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm"; // Enables GitHub-flavored markdown
-import rehypeRaw from "rehype-raw"; // Allows raw HTML inside markdown
-import rehypeSanitize from "rehype-sanitize"; // Prevents XSS attacks
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
+import rehypeHighlight from "rehype-highlight";
+import "highlight.js/styles/github.css";
+import "github-markdown-css/github-markdown-light.css";
 
 export default function Home() {
   const [link, setLink] = useState("");
-  const [res, setResult] = useState("");
+  const [markdown, setMarkdown] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showReadmeSections, setShowReadmeSections] = useState(false);
 
   const sendLink = async () => {
+    setLoading(true);
     try {
       const result = await axios.post("http://127.0.0.1:8000/api/link/", {
         link: link,
       });
-      setResult(result.data["data"]); // Ensure API returns valid markdown
+      setMarkdown(result.data["data"]);
+      setShowReadmeSections(true);
     } catch (error) {
       console.error("Error fetching README:", error);
+      setMarkdown("Failed to generate README. Please check the link or try again.");
     }
+    setLoading(false);
   };
 
   return (
     <>
       <Navigation />
       <div className="w-full flex items-center mt-20">
-        <h1 className="text-6xl font-semibold m-auto my-auto">
-          Generate a ReadMe With One Click
+        <h1 className="text-6xl font-semibold m-auto my-auto text-center px-4">
+          Build a Professional ReadMe in Seconds.
         </h1>
       </div>
-      <div className="flex w-full max-w-sm items-center space-x-2 mx-auto mt-5">
+
+      <div className="flex w-full max-w-xl items-center space-x-2 mx-auto mt-5">
         <Input
           type="text"
-          placeholder="Enter Link"
+          placeholder="Enter GitHub repo link"
+          value={link}
           onChange={(e) => setLink(e.target.value)}
         />
-        <Button type="submit" onClick={sendLink}>
-          Get Readme
+        <Button type="submit" onClick={sendLink} disabled={loading}>
+          {loading ? "Generating..." : "Get Readme"}
         </Button>
       </div>
 
-      {/* Markdown Display Section */}
-      <div className="prose max-w-2xl mx-auto p-5 bg-gray-100 rounded-lg shadow-md">
-      </div>
+      {showReadmeSections && (
+        <div className="flex flex-col lg:flex-row gap-6 p-6">
+          <div className="w-full lg:w-1/2 h-[600px]">
+            <textarea
+              className="w-full h-full border border-gray-300 rounded-md p-4 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              value={markdown}
+              onChange={(e) => setMarkdown(e.target.value)}
+              placeholder="Edit your README markdown here..."
+            />
+          </div>
+          
+          <div className="w-full lg:w-1/2 h-[600px] bg-white border border-gray-200 rounded-xl overflow-y-auto overflow-x-hidden">
+            <article className="markdown-body p-6">
+              <Markdown
+                children={markdown}
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeHighlight]}
+              />
+            </article>
+          </div>
+        </div>
+      )}
     </>
   );
 }

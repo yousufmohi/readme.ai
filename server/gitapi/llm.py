@@ -1,6 +1,6 @@
+# llm.py
 import os
 from dotenv import load_dotenv
-import requests
 from groq import Groq
 
 load_dotenv()
@@ -34,43 +34,50 @@ def llm_prompt(file_summaries, repo):
     for chunk in chunks:
         summary_text = '\n\n'.join([f"File: {file['path']}\n{file['summary']}" for file in chunk])
 
-        # Updated prompt for generating a better README
         prompt = f"""
-        You are an AI assistant specializing in generating clear, concise, and professional README files for open-source projects. Based only on the project files provided below, please create a comprehensive README that includes only the relevant information. Your goal is to make the README as informative and easy to follow as possible, while ensuring that it is accurate, well-organized, and professional.
-        
-        **Instructions:**  
-        - Extract the **Project Title** directly from the codebase or determine it from the folder structure (e.g., the name of the repository). Do not use placeholders or generic titles like "[PROJECT TITLE]".  
-        - Include only the **relevant sections** that provide value to someone who may want to understand or use this project.  
-        - Use markdown formatting to organize the README professionally.  
+You are an expert technical writer and GitHub maintainer. Based solely on the files and metadata provided, write a clean, complete, and professional `README.md`.
 
-        Key sections to include if applicable:  
-        - **Project Title**  
-        - **Description** (Provide a summary of the project and its purpose)  
-        - **Installation Instructions** (Step-by-step instructions to set up and install the project)  
-        - **Usage Instructions** (How to run the project or use the features)  
-        - **Key Features** (List of important functionalities or benefits of the project)  
-        - **Technologies Used** (Include badges and mention frameworks, libraries, and tools used, if applicable)  
-        - **License** (If there is any license information in the codebase, include it)  
-        - **Contact Information** (If applicable)  
-        - **API Documentation** (If there are APIs, list endpoints and functionality)
+### STRICT RULES:
+- Use only factual information from the actual codebase. Do NOT invent features, descriptions, or commands.
+- Never repeat the project title or sections.
+- ⚠️ DO NOT use placeholders such as:
+  - [project description]
+  - [username], [email address]
+  - [LICENSE]
+  - [list key technologies or frameworks]
+- You must not insert any placeholders. If the real data is not in the provided codebase, SKIP that section entirely.
+- Avoid merge markers like `===` or repeated headers.
 
-        **Important Formatting Guidelines:**  
-        - Use **relevant technology badges** (e.g., for Node.js, Python, React, etc.) formatted with shields.io. Example:  
-          ```markdown
-          ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
-          ```  
-        - Ensure clear and professional markdown formatting throughout the README.
+### STRUCTURE:
+1. **Project Title**: One `# {repo}` heading
+2. **Technology Badges**: Immediately under the title, display all shields.io tech badges horizontally in one line
+3. **Description**: 2–5 sentence summary of what the project actually does
+4. **Installation**: Based only on setup files or clearly defined instructions in the codebase
+5. **Usage**: Actual commands used to start or run the project
+6. **Features**: Bullet points of real features from the project
+7. **APIs**: Include only if defined in the code (e.g. Express routes or FastAPI endpoints)
+8. **Dependencies**: Major libraries/tools used
+9. **License**: Include only if the license file exists
+10. **Contributing/Contact**: Only if found in the codebase
 
-        Here is the content of the project files:  
-        **Project Name:** {repo}  
-        {summary_text}
-        """
+### Style Rules:
+- Output clean GitHub Markdown only
+- Keep badge icons inline (horizontally), not stacked
+- No commentary, placeholders, or repeated sections
+
+### Project Name: `{repo}`
+
+### Codebase Summary:
+{summary_text.strip()}
+"""
 
         try:
             completion = client.chat.completions.create(
                 model="llama-3.1-8b-instant",
-                messages=[{"role": "system", "content": "You are an AI that specializes in generating professional README files for GitHub repositories."},
-                          {"role": "user", "content": prompt}],
+                messages=[
+                    {"role": "system", "content": "You are an AI that generates professional GitHub README files using real information from the codebase only. You must not guess, add placeholders, or create fictional content. If something is missing from the code, omit it entirely."},
+                    {"role": "user", "content": prompt}
+                ],
                 temperature=0.5,
                 max_tokens=6000,
                 top_p=1
@@ -79,71 +86,42 @@ def llm_prompt(file_summaries, repo):
             all_summaries.append(completion.choices[0].message.content)
         except Exception as e:
             print(f"Error: {e}")
-    
-    final_readme = '\n\n'.join(all_summaries)
-    
-    # Final refinement prompt
-    final_refinement_prompt = f"""
-    You are an AI assistant specializing in generating clear, concise, and professional README files for open-source projects. Based solely on the project files provided below, create a comprehensive README that includes only the relevant information. Your goal is to make the README as informative and easy to follow as possible while ensuring that it is accurate, well-organized, and professional.
+            return "Error generating README. Please try again."
 
-    ## Instructions
-    - Extract the **Project Title** directly from the codebase or infer it from the folder structure (e.g., the name of the repository).
-    - Include only **relevant sections** that provide value to users who may want to understand or use the project.
-    - Format the README using clean and consistent markdown.
+    final_readme = '\n\n'.join(all_summaries).strip()
 
-    ### Essential Sections to Include:
-    - **Project Title**
-    - **Description** (Summarize the project's purpose and functionality)
-    - **Installation Instructions** (Provide step-by-step setup guidance)
-    - **Usage Instructions** (Explain how to run or use the project)
-    - **Key Features** (List the main functionalities or benefits)
-    - **Technologies Used** (Include shields.io badges for tools, frameworks, and languages)
-    - **License** (Include license details if applicable)
-    - **Contact Information** (Provide ways for users to reach out for support or collaboration)
-    - **API Documentation** (List any endpoints with descriptions)
+    refinement_prompt = f"""
+You are an AI assistant that merges partial `README.md` drafts into a single, professional, and coherent GitHub README file.
 
-    ## Markdown Formatting Guidelines
-    - Use **shields.io badges** for relevant technologies. Example:
-    ```markdown
-    ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-    ```
-    - Maintain clear, organized sections with descriptive headings.
-    - Ensure consistent formatting for code blocks and inline code using triple backticks.
-    - Provide clear explanations without redundancy.
+### Your goals:
+- ✅ Output a SINGLE complete README.md
+- ✅ No repeated headers or duplicate sections
+- ✅ Use ONLY information extracted from the codebase
+- ✅ Keep badge layout inline under the title
+- ✅ Remove placeholders like [username], [email address], or [project description]
 
-    ## Example Prompt
-    ```plaintext
-    Based on the following project files, generate a comprehensive README for an open-source project named `{repo}`.
+### Final Output Instructions:
+- Use clean GitHub Markdown formatting
+- Preserve logical section order: title → badges → description → install → usage → features → APIs → dependencies → license → contact
 
-    Here are the summarized file contents:
+## Input Drafts:
+{final_readme}
 
-    {summary_text}
+Return only the final README.md markdown content — clean, deduplicated, and polished.
+"""
 
-    Please ensure the README includes all essential sections while maintaining clarity and professionalism.
-    ```
-
-    ## Refinement Prompt
-    ```plaintext
-    Please refine the following README to ensure it's well-structured, consistent, and professional. Make necessary improvements for readability, clarity, and organization. Ensure proper markdown formatting with clean sectioning and correct use of shields.io badges.
-
-    Only provide the final README content with no additional comments or explanations.
-
-    {final_readme}
-    """
-    
     try:
-        refinement_completion = client.chat.completions.create(
+        refinement = client.chat.completions.create(
             model="llama-3.1-8b-instant",
-            messages=[{"role": "system", "content": "You are an AI that specializes in generating professional README files for GitHub repositories."},
-                      {"role": "user", "content": final_refinement_prompt.replace("[Insert your final README content here]", final_readme)}],
-            temperature=0.5,
+            messages=[
+                {"role": "system", "content": "You refine and clean up partial README drafts into one complete file, removing placeholders and cleaning markdown. Only output one final README."},
+                {"role": "user", "content": refinement_prompt}
+            ],
+            temperature=0.3,
             max_tokens=6000,
             top_p=1
         )
-        refined_readme = refinement_completion.choices[0].message.content
-
-
-        return refined_readme
-
+        return refinement.choices[0].message.content.strip()
     except Exception as e:
         print(f"Error: {e}")
+        return final_readme
