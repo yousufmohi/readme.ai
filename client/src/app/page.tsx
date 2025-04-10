@@ -16,14 +16,15 @@ import "@/styles/markdown.css";
 import { useTheme } from "next-themes";
 
 export default function Home() {
-  const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const { theme } = useTheme();
   const [link, setLink] = useState("");
   const [markdown, setMarkdown] = useState("");
   const [loading, setLoading] = useState(false);
   const [showReadmeSections, setShowReadmeSections] = useState(false);
 
-  useEffect(() => setMounted(true), []);
 
   const sendLink = async () => {
     setLoading(true);
@@ -43,27 +44,39 @@ export default function Home() {
   return (
     <>
       <Navigation />
-      <div className="w-full flex items-center mt-20">
-        <h1 className="text-6xl font-semibold m-auto my-auto text-center px-4">
-          Build a Professional <span className="text-green-500">ReadMe</span> in Seconds.
-        </h1>
-      </div>
+      {!showReadmeSections && 
+            <div className="w-full flex flex-col items-center justify-center text-center mt-24 mb-10 px-4">
+            <h1 className="text-5xl lg:text-6xl font-bold max-w-3xl leading-tight">
+              Build a Professional <span className="text-green-500">ReadMe</span> in Seconds.
+            </h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-4 text-lg max-w-xl">
+              Paste your GitHub repository link below and generate a polished, clean, and styled README.md instantly.
+            </p>
+          </div>
+      }
 
-      <div className="flex w-full max-w-xl items-center space-x-2 mx-auto mt-5">
+
+      <div className="flex w-full max-w-3xl items-center space-x-4 mx-auto mt-5 mb-5 px-4">
         <Input
           type="text"
-          placeholder="Enter GitHub repo link"
+          placeholder="https://github.com/your-user/your-repo"
           value={link}
           onChange={(e) => setLink(e.target.value)}
+          className="text-lg px-5 py-4 rounded-md border-gray-300"
         />
-        <Button type="submit" onClick={sendLink} className="cursor-pointer" disabled={loading}>
+        <Button
+          type="submit"
+          onClick={sendLink}
+          className="bg-green-500 text-white hover:bg-green-600 px-6 py-3 text-lg font-semibold rounded-md"
+          disabled={loading}
+        >
           {loading ? "Generating..." : "Get Readme"}
         </Button>
       </div>
 
       {showReadmeSections && (
         <div className="flex flex-col lg:flex-row gap-6 p-6">
-          <div className="w-full lg:w-1/2 h-[600px]">
+          <div className="w-full lg:w-1/2 h-[700px]">
             <textarea
               className="w-full h-full border border-gray-300 rounded-md p-4 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               value={markdown}
@@ -72,7 +85,7 @@ export default function Home() {
             />
           </div>
 
-          <div className="w-full lg:w-1/2 h-[600px] bg-white border border-gray-200 rounded-xl overflow-y-auto overflow-x-hidden">
+          <div className="w-full lg:w-1/2 h-[700px] bg-white border border-gray-200 rounded-xl overflow-y-auto overflow-x-hidden">
             {mounted && (
               <article className={`markdown-body p-6 ${theme === "dark" ? "dark" : ""}`}>
                 <Markdown
