@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import * as React from "react";
 import Navigation from "@/components/ui/Navigations";
@@ -12,12 +12,18 @@ import rehypeSanitize from "rehype-sanitize";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
 import "github-markdown-css/github-markdown-light.css";
+import "@/styles/markdown.css";
+import { useTheme } from "next-themes";
 
 export default function Home() {
+  const { theme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [link, setLink] = useState("");
   const [markdown, setMarkdown] = useState("");
   const [loading, setLoading] = useState(false);
   const [showReadmeSections, setShowReadmeSections] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   const sendLink = async () => {
     setLoading(true);
@@ -39,7 +45,7 @@ export default function Home() {
       <Navigation />
       <div className="w-full flex items-center mt-20">
         <h1 className="text-6xl font-semibold m-auto my-auto text-center px-4">
-          Build a Professional ReadMe in Seconds.
+          Build a Professional <span className="text-green-500">ReadMe</span> in Seconds.
         </h1>
       </div>
 
@@ -50,7 +56,7 @@ export default function Home() {
           value={link}
           onChange={(e) => setLink(e.target.value)}
         />
-        <Button type="submit" onClick={sendLink} disabled={loading}>
+        <Button type="submit" onClick={sendLink} className="cursor-pointer" disabled={loading}>
           {loading ? "Generating..." : "Get Readme"}
         </Button>
       </div>
@@ -65,15 +71,17 @@ export default function Home() {
               placeholder="Edit your README markdown here..."
             />
           </div>
-          
+
           <div className="w-full lg:w-1/2 h-[600px] bg-white border border-gray-200 rounded-xl overflow-y-auto overflow-x-hidden">
-            <article className="markdown-body p-6">
-              <Markdown
-                children={markdown}
-                remarkPlugins={[remarkGfm]}
-                rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeHighlight]}
-              />
-            </article>
+            {mounted && (
+              <article className={`markdown-body p-6 ${theme === "dark" ? "dark" : ""}`}>
+                <Markdown
+                  children={markdown}
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeHighlight]}
+                />
+              </article>
+            )}
           </div>
         </div>
       )}

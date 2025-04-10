@@ -2,15 +2,18 @@
 import os
 from dotenv import load_dotenv
 from groq import Groq
+from openai import OpenAI
 
 load_dotenv()
 groq_key = os.getenv("GROQ_API_KEY")
+oAI_key = os.getenv("OPENAI_API_KEY")
 
 if not groq_key:
     raise ValueError("GROQ_API_KEY is missing. Please check your .env file.")
 
 def llm_prompt(file_summaries, repo):
     client = Groq(api_key=groq_key)
+    # client = OpenAI(api_key=oAI_key)
 
     def chunk_data(data, max_tokens=4000):
         chunks = []
@@ -73,7 +76,7 @@ You are an expert technical writer and GitHub maintainer. Based solely on the fi
 
         try:
             completion = client.chat.completions.create(
-                model="llama-3.1-8b-instant",
+                model = "llama-3.1-8b-instant",
                 messages=[
                     {"role": "system", "content": "You are an AI that generates professional GitHub README files using real information from the codebase only. You must not guess, add placeholders, or create fictional content. If something is missing from the code, omit it entirely."},
                     {"role": "user", "content": prompt}
