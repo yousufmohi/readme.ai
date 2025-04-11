@@ -25,7 +25,17 @@ def extract_link_information(link):
         link_data = link.replace("github.com/", "").split('/')
     return link_data[0], link_data[1]
 
+def is_valid_github_url(url: str) -> bool:
+    pattern = r"^https?://(www\.)?github\.com/[\w-]+/[\w.-]+/?$"
+    if re.match(pattern, url) is not None:
+        return True
+    else:
+        return False
+
 def get_info(link, token):
+    if not is_valid_github_url(link):
+        return False
+
     username, repo = extract_link_information(link)
     url = f"https://api.github.com/repos/{username}/{repo}/contents"
     headers = {"Authorization": f"token {token}"}

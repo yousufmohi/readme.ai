@@ -10,4 +10,6 @@ router = APIRouter()
 @router.post("/api/link")
 async def readLink(item: Item):
     info = get_info(item.link,os.getenv("TOKEN"))
+    if not info:
+        return None
     return {"data": info}

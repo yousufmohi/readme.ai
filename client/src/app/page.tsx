@@ -24,18 +24,20 @@ export default function Home() {
   const [markdown, setMarkdown] = useState("");
   const [loading, setLoading] = useState(false);
   const [showReadmeSections, setShowReadmeSections] = useState(false);
-
+  const [error,setError] = useState(false);
 
   const sendLink = async () => {
-    setLoading(true);
-    try {
+      setLoading(true);
+      setShowReadmeSections(false);
+      setError(false);
+      try {
       const result = await axios.post("http://127.0.0.1:8000/api/link/", {
         link: link,
       });
       setMarkdown(result.data["data"]);
       setShowReadmeSections(true);
-    } catch (error) {
-      console.error("Error fetching README:", error);
+    } catch (err) {
+      setError(true);
       setMarkdown("Failed to generate README. Please check the link or try again.");
     }
     setLoading(false);
@@ -67,13 +69,17 @@ export default function Home() {
         <Button
           type="submit"
           onClick={sendLink}
-          className="bg-green-500 text-white hover:bg-green-600 px-6 py-3 text-lg font-semibold rounded-md"
+          className="bg-green-500 text-white hover:bg-green-600 px-6 py-3 text-lg font-semibold rounded-md cursor-pointer"
           disabled={loading}
         >
           {loading ? "Generating..." : "Get Readme"}
         </Button>
       </div>
-
+      {error && (
+        <div className="text-red-500 text-sm text-center mt-2">
+          Error generating ReadMe. Please Try Again.
+        </div>
+      )}
       {showReadmeSections && (
         <div className="flex flex-col lg:flex-row gap-6 p-6">
           <div className="w-full lg:w-1/2 h-[700px]">
