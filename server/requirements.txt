@@ -1,0 +1,7 @@
+"fastapi[standard]"
+uvicorn
+python-dotenv
+requests
+openai
+groq
+slowapi

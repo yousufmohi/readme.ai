@@ -77,7 +77,7 @@ export default function Home() {
       </div>
       {error && (
         <div className="text-red-500 text-sm text-center mt-2">
-          Error generating ReadMe. Please Try Again.
+          Invalid GitHub repo or server error.
         </div>
       )}
       {showReadmeSections && (
