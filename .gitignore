@@ -1,0 +1,13 @@
+server/venv/
+server/__pycache__/
+server/*.pyc
+server/.env
+
+client/node_modules/
+client/.next/
+client/.env.local
+
+.DS_Store
+*.log
+*.swp
+.env
