@@ -7,7 +7,6 @@
   <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/npm/npm-original-wordmark.svg" alt="npm" width="50" height="50" style="margin-right: 20px;" />
   <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" alt="Python" width="50" height="50" style="margin-right: 20px;" />
   <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/fastapi/fastapi-original.svg" alt="FastAPI" width="50" height="50" style="margin-right: 20px;" />
-  <img src="https://seeklogo.com/images/O/openai-logo-8B9BFEDC26-seeklogo.com.png" alt="OpenAI" width="50" height="50" style="margin-right: 20px;" />
   <img src="https://avatars.githubusercontent.com/u/140009580?s=200&v=4" alt="Groq" width="50" height="50" style="margin-right: 20px;" />
 </p>
 
